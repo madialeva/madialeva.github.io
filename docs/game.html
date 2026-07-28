@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #000; }
+  </style>
+  <script src="js/3rd/phaser-arcade-physics.min.js"></script>
+  <script src="js/game/scene/TapScene.js"></script>
+  <script src="js/game/scene/StartScene.js"></script>
+</head>
+<body>
+
+<script>
+  const config = {
+    type: Phaser.AUTO,
+    backgroundColor: '#000000',
+    scale: {
+      mode: Phaser.Scale.RESIZE,
+      autoCenter: Phaser.Scale.CENTER_BOTH
+    },
+    scene: [TapScene, StartScene]
+  };
+
+  const game = new Phaser.Game(config);
+
+  window.addEventListener('resize', () => game.scale.refresh());
+</script>
+
+</body>
+</html>

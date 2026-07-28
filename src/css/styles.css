@@ -1,0 +1,85 @@
+@import url('fonts.css');
+
+html, body {
+  margin: 0;
+}
+
+
+body {
+  font-family: 'brocharegular', serif;
+  min-height: 450px;
+  height: 100vh;
+  background: radial-gradient(circle, #0077ea, #1f4f96, #1b2949, #000);
+}
+
+
+#starfield {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.container {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px; /* separación constante entre los divs */
+}
+
+
+.container:after {
+  content: 'angazo';
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  color: whitesmoke;
+  letter-spacing: -2px;
+  font-size: 100px;
+  font-weight: normal;
+  font-style: normal;
+  margin-bottom: 24px;
+  order: 0;
+}
+
+
+#btn-game {
+  order: 2;
+  margin-top: 20px;
+  padding: 12px 36px;
+  background: transparent;
+  color: aquamarine;
+  font-family: courier, serif;
+  font-size: 28px;
+  letter-spacing: 4px;
+  border: 2px solid aquamarine;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+#btn-game:hover {
+  background: aquamarine;
+  color: #1b2949;
+}
+
+
+#date, #device, #nav, #ip, #hello {
+  position: static;
+  left: unset;
+  top: unset;
+  transform: none;
+  color: aquamarine;
+  font-size: 28px;
+  font-family: courier, serif;
+  letter-spacing: 1px;
+  text-align: center;
+  order: 1;
+}

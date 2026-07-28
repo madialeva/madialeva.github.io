@@ -1,0 +1,12 @@
+# IDE and editor files
+.idea/
+*.iml
+*.ipr
+*.iws
+*.vscode/
+*.swp
+*.swo
+
+# Temporary directorie
+tmp/
+
