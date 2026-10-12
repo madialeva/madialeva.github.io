@@ -82,7 +82,10 @@ out = out.replace(/^[ \t]*\n/gm, '');
 fs.writeFileSync(file, out);
 EOF
 
-# Procesar todos los .js bajo DEST_DIR
+# Procesar todos los .js bajo DEST_DIR, salvo las librerías de terceros (js/3rd/) y
+# el juego Xantar (js/xantar/, generado desde su repositorio con `npm run publish:site`):
+# ya vienen minificados y sin comentarios, y el stripper confunde partes de su código
+# con comentarios (p. ej. expresiones regulares), lo que los rompe.
 count=0
 total_saved=0
 
@@ -94,7 +97,7 @@ while IFS= read -r -d '' jsfile; do
   total_saved=$(( total_saved + saved ))
   printf "  %-55s %5d → %5d bytes  (-%d)\n" "$jsfile" "$before" "$after" "$saved"
   (( count++ ))
-done < <(find "$DEST_DIR" -name '*.js' -print0)
+done < <(find "$DEST_DIR" -name '*.js' -not -path '*/js/3rd/*' -not -path '*/js/xantar/*' -print0)
 
 rm -f "$STRIPPER"
 

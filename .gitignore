@@ -10,3 +10,7 @@
 # Temporary directorie
 tmp/
 
+# AI tools folders
+openspec/
+
+
