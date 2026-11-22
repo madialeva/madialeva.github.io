@@ -567,12 +567,12 @@
           float sobre = sobreMar - alturaNubes(vPosAtm.xz) - 26.0 * (ruido3(vPosAtm * 0.012) - 0.5);
           // (los últimos metros sobre el mar siempre se los traga la niebla: así nunca se ve la
           // intersección recta de la roca con el plano de las nubes, ni siquiera en los claros)
-          float fundido = max(1.0 - smoothstep(-10.0, 80.0, sobre), 1.0 - smoothstep(4.0, 45.0, sobreMar));
+          float fundido = max(1.0 - smoothstep(-10.0, 110.0, sobre), 1.0 - smoothstep(4.0, 45.0, sobreMar));
           // Solo donde el mar es opaco: a lo lejos se funde con el cielo y el hueco lo dejaría ver
           fundido *= rd.y < -1e-4 ? opacidadNubes((cameraPosition + rd * ((uNiebla.w - cameraPosition.y) / rd.y)).xz) : 0.0;
-          vec3 niebla = atmosfera(colorNiebla() * (0.94 + 0.12 * ruido3(vPosAtm * 0.05)), vPosAtm, 0.0);
-          gl_FragColor.rgb = mix(gl_FragColor.rgb, niebla, smoothstep(0.0, 0.9, fundido));
-          if (fundido > 0.9) discard;
+          vec3 niebla = atmosfera(colorNiebla() * (0.86 + 0.12 * ruido3(vPosAtm * 0.05)), vPosAtm, 0.0);
+          gl_FragColor.rgb = mix(gl_FragColor.rgb, niebla, smoothstep(0.0, 0.92, fundido));
+          if (fundido > 0.92) discard;
         }`)
       .replace('#include <color_fragment>', `#include <color_fragment>
         if (vPared > 0.5) {
@@ -619,9 +619,9 @@
   }
   const materialArbol = conAtmosfera(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 }), 'arbol');
   const azarDeCelda = new Float64Array(5);
-  function sortearCelda(x, y, semilla) {
+  function sortearCelda(x, y, semilla, cuantos = 5) {
     let h = (Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(semilla, 1442695041)) | 0;
-    for (let k = 0; k < 5; k++) {
+    for (let k = 0; k < cuantos; k++) {
       h = Math.imul(h ^ (h >>> 15), 2246822519);
       h = Math.imul(h ^ (h >>> 13), 3266489917);
       h ^= h >>> 16;
@@ -630,20 +630,24 @@
   }
   function bloques(x, y, semilla) {
     const ix = Math.floor(x), iy = Math.floor(y);
-    let mejor = Infinity, valor = 0;
+    let mejor = Infinity, mejorX = 0, mejorY = 0, dxMejor = 0, dyMejor = 0;
     for (let j = -1; j <= 1; j++) {
       for (let i = -1; i <= 1; i++) {
-        sortearCelda(ix + i, iy + j, semilla);
+        sortearCelda(ix + i, iy + j, semilla, 2);
         const dx = x - (ix + i + 0.1 + 0.8 * azarDeCelda[0]);
         const dy = y - (iy + j + 0.1 + 0.8 * azarDeCelda[1]);
         const d = dx * dx + dy * dy;
         if (d < mejor) {
           mejor = d;
-          valor = azarDeCelda[2] + (azarDeCelda[3] - 0.5) * 0.5 * dx + (azarDeCelda[4] - 0.5) * 0.35 * dy;
+          mejorX = ix + i;
+          mejorY = iy + j;
+          dxMejor = dx;
+          dyMejor = dy;
         }
       }
     }
-    return valor;
+    sortearCelda(mejorX, mejorY, semilla, 5);
+    return azarDeCelda[2] + (azarDeCelda[3] - 0.5) * 0.5 * dxMejor + (azarDeCelda[4] - 0.5) * 0.35 * dyMejor;
   }
   function crearMacizo(m, arboles) {
     const { cx, cz, radio: R, cima, desde, hasta, nAng, nAlt } = m;
@@ -1296,7 +1300,7 @@
   const direccion = new THREE.Vector3();
   const abajo = new THREE.Vector3(0, -1, 0);
   let primerFotograma = true;
-  const rendimiento = { esperaHasta: Infinity, anterior: -1, intervalos: [], minimo: esMovil ? 0.9 : 0.7 };
+  const rendimiento = { esperaHasta: Infinity, anterior: -1, intervalos: [], lentas: 0, minimo: esMovil ? 0.9 : 0.7 };
   function vigilarRendimiento() {
     const ahora = performance.now();
     const salto = ahora - rendimiento.anterior;
@@ -1305,9 +1309,12 @@
     rendimiento.intervalos.push(salto);
     const muestras = rendimiento.intervalos;
     if (muestras.length < 30 || muestras.reduce((a, b) => a + b, 0) < 750) return;
-    const mediana = rendimiento.intervalos.sort((a, b) => a - b)[rendimiento.intervalos.length >> 1];
-    rendimiento.intervalos.length = 0;
-    if (mediana > 20 && relacionPixeles > rendimiento.minimo) {
+    const mediana = muestras.sort((a, b) => a - b)[muestras.length >> 1];
+    muestras.length = 0;
+    rendimiento.lentas = mediana > 20 ? rendimiento.lentas + 1 : 0;
+    if (rendimiento.lentas < 2) return;
+    rendimiento.lentas = 0;
+    if (relacionPixeles > rendimiento.minimo) {
       relacionPixeles = Math.max(rendimiento.minimo, relacionPixeles * 0.85);
       renderer.setPixelRatio(relacionPixeles);
       encuadrar();
