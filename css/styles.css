@@ -1,0 +1,208 @@
+:root {
+  /* Fondo de respaldo si no hay WebGL: el mismo atardecer, sin escena */
+  --atardecer: linear-gradient(180deg, #4d5f86 0%, #9d8aa6 42%, #e7b48e 62%, #f2d2b4 70%, #8d8ea3 100%);
+  --crema: #fff3e2;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: #26222b;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+/* Lienzo de three.js a pantalla completa; aparece en cuanto hay un fotograma */
+#escena {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+#escena canvas {
+  display: block;
+  opacity: 0;
+  transition: opacity 2.4s ease;
+}
+
+body.escena-lista #escena canvas {
+  opacity: 1;
+}
+
+
+/* La palabra queda en el HTML para lectores de pantalla y buscadores; solo se ve sin WebGL */
+.titulo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+body.sin-webgl {
+  background: var(--atardecer);
+}
+
+body.sin-webgl .titulo {
+  position: fixed;
+  inset: 38% 0 auto;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  color: #6b4423;
+  font: italic 700 clamp(56px, 14vw, 140px) / 1 Georgia, "Times New Roman", serif;
+  text-align: center;
+  text-shadow: 0 2px 0 #c89a63, 0 10px 24px rgba(40, 20, 10, 0.35);
+}
+
+
+/* Botón "entrar": cristal ahumado con una puerta entreabierta que deja pasar la luz */
+.entrar {
+  position: fixed;
+  left: 50%;
+  bottom: max(30px, calc(env(safe-area-inset-bottom) + 18px));
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 28px 11px 20px;
+  color: var(--crema);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  line-height: 1;
+  text-decoration: none;
+  background: rgba(28, 22, 30, 0.32);
+  border: 1px solid rgba(255, 236, 214, 0.5);
+  border-radius: 999px;
+  box-shadow: 0 10px 34px rgba(10, 6, 14, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  backdrop-filter: blur(12px) saturate(1.3);
+  opacity: 0;
+  transform: translate(-50%, 14px);
+  transition: opacity 1.2s ease 1.1s, transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 1.1s,
+              background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+body.escena-lista .entrar,
+body.sin-webgl .entrar,
+body.boton-visible .entrar {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.entrar:hover,
+.entrar:focus-visible {
+  background: rgba(60, 42, 38, 0.45);
+  border-color: rgba(255, 226, 186, 0.9);
+  box-shadow: 0 10px 40px rgba(255, 170, 90, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.entrar:focus-visible {
+  outline: 2px solid var(--crema);
+  outline-offset: 4px;
+}
+
+.entrar span {
+  /* El espaciado de letras deja aire a la derecha de la última: se compensa */
+  margin-right: -0.24em;
+}
+
+.puerta {
+  width: 26px;
+  height: 26px;
+  overflow: visible;
+}
+
+.puerta__marco {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.puerta__luz {
+  fill: url(#luz-puerta);
+  filter: drop-shadow(0 0 2.5px rgba(255, 186, 104, 0.95));
+  animation: latido 3.2s ease-in-out infinite;
+}
+
+.puerta__luz-suelo {
+  fill: #ffc47a;
+  opacity: 0.32;
+  transition: opacity 0.6s ease;
+}
+
+.puerta__hoja {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.puerta__hoja path {
+  fill: #2a1f22;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.puerta__hoja circle {
+  fill: currentColor;
+}
+
+.entrar:hover .puerta__hoja,
+.entrar:focus-visible .puerta__hoja {
+  transform: scaleX(0.55);
+}
+
+.entrar:hover .puerta__luz-suelo,
+.entrar:focus-visible .puerta__luz-suelo {
+  opacity: 0.6;
+}
+
+@keyframes latido {
+  50% { opacity: 0.82; }
+}
+
+
+/* Al entrar, la puerta se abre del todo y la luz lo inunda todo */
+#velo {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 85%, #fffaf0 0%, #ffe3bd 45%, #f4c99a 100%);
+  opacity: 0;
+  transition: opacity 0.75s ease-in;
+}
+
+body.saliendo #velo {
+  opacity: 1;
+}
+
+body.saliendo .puerta__hoja {
+  transform: scaleX(0.1);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .entrar,
+  #escena canvas,
+  .puerta__hoja {
+    transition-duration: 0.01s;
+    transition-delay: 0s;
+  }
+
+  .puerta__luz {
+    animation: none;
+  }
+}
